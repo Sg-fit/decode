@@ -17,9 +17,9 @@
     {% if user %}
       <div class="auth">
         <span class="meta" style="margin:0" title="The account this browser is signed in to.">user: <b>{{ user }}</b></span>
-        <!-- {% if symbols_enabled %}
+        {% if symbols_enabled %}
           <a class="mini ghost btnlink" href="/symbols" title="Build your own symbol library: short triggers that stand for whole phrases.">My symbols</a>
-        {% endif %} -->
+        {% endif %}
         <a class="mini ghost btnlink" href="/history" title="Every run kept for your account.">History</a>
         <form method="post" action="/logout" style="display:inline">
           <input type="hidden" name="next" value="{{ here }}">
