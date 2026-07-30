@@ -1,7 +1,7 @@
 """pytest (run from backend/)"""
 import pytest
 
-from app.codecs import CODECS, apply, detect, run, score
+from codecs import CODECS, apply, detect, run, score
 
 ENCODINGS = [k for k, v in CODECS.items() if v[3]]
 
