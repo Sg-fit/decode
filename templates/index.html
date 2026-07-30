@@ -88,7 +88,7 @@
             <span class="n">{{ c.label }}</span>
             <span class="s" title="Confidence: printable characters, common English words and letter frequency.">{{ c.score|round|int }}{{ ' ▲' if c.score > base_score + 5 }}</span>
             <pre>{{ c.output[:300] }}</pre>
-            <div class="bar" style="width: {{ c.width }}%"></div>
+            <div class="bar" style="width: {{c.width}}%"></div>
           </button>
         {% endfor %}
       {% endif %}
