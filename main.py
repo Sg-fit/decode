@@ -1,10 +1,6 @@
 """Flask app: the decoder, served as plain HTML forms.
 
     python main.py              (from the project root, serves on :8000)
-
-No JSON, no fetch, no client-side state. The page posts a form, the server
-does the work and renders the next page. Every button is a submit button
-carrying an `action`, so one form covers run / add / detect / save / download.
 """
 
 import time
@@ -79,8 +75,7 @@ def login():
         return redirect(back)
 
     user = db.find_user(username)
-    # One message for both "no such user" and "wrong password" — saying which
-    # would let anyone probe for valid usernames.
+    # One message for both "no such user" and "wrong password" 
     if user is None or not check_password_hash(user["password_hash"], password):
         return decoder_page(message="wrong username or password", bad=True)
     session["uid"] = user["id"]
@@ -114,7 +109,7 @@ def read_steps():
 
 
 def read_text():
-    """The input box — or an uploaded file, if one was chosen."""
+    """The input box — or an uploaded file"""
     upload = request.files.get("upload")
     if upload and upload.filename:
         return upload.read(MAX_INPUT + 1).decode("utf-8", errors="replace")[:MAX_INPUT]
@@ -122,7 +117,7 @@ def read_text():
 
 
 def run_pipeline(text, steps):
-    """codecs.run speaks {method, direction, param}; the form speaks {method, dir}."""
+    """codecs.run: {method, direction, param}; the form: {method, dir}."""
     return codecs.run(text, [
         {"method": s["method"], "direction": s["dir"],
          "param": s["param"], "enabled": s["on"]}
@@ -142,7 +137,7 @@ def index_post():
     text = read_text()
     steps = read_steps()
     message = None
-
+    #for each selected action, set up the algotirthm accordingly and apply method neccessary
     if action == "clear":
         text, steps = "", []
     elif action == "sample":
@@ -189,7 +184,8 @@ def index_post():
             db.add_entry(user["id"], "save", text, steps, output,
                          (request.form.get("savename") or "untitled")[:80])
             message = "Saved."
-
+    
+    #after finish all set-up and respond, return the plain page with neccesary updates
     return decoder_page(text=text, steps=steps, detect=(action == "detect"),
                         message=message, bad=bool(message) and message != "Saved.")
 
@@ -206,6 +202,7 @@ def decoder_page(text="", steps=None, detect=False, message=None, bad=False):
         if not (last and last["input"] == text and last["output"] == output):
             db.add_entry(user["id"], "history", text, steps, output)
 
+    #running the auto detection 
     candidates, base_score = [], 0
     if detect:
         source = output if steps else text
@@ -214,6 +211,7 @@ def decoder_page(text="", steps=None, detect=False, message=None, bad=False):
         for c in candidates:
             c["width"] = max(4, round(c["score"] / best * 100))
 
+       # diplaying the save and hisoty section
     saves, history, history_count = [], [], ""
     if user:
         saves = [decorate(e) for e in db.list_entries(user["id"], "save", 10)]
@@ -222,6 +220,7 @@ def decoder_page(text="", steps=None, detect=False, message=None, bad=False):
         history = [decorate(e) for e in rows]
         history_count = f"{len(rows)} of {total}" if total > len(rows) else ""
 
+        #After finish all of the commands, return the plain tempelated withup-date 
     return render_template(
         "index.html",
         text=text, steps=steps, results=results, output=output,
@@ -236,7 +235,7 @@ def decoder_page(text="", steps=None, detect=False, message=None, bad=False):
         symbols_enabled=app.config.get("SYMBOLS_ENABLED", False),
     )
 
-
+# Integrate ai beautified templates 
 def decorate(entry):
     """Add what the templates show: a readable chain and a local timestamp."""
     entry["chain"] = " → ".join(
