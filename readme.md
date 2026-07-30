@@ -1,6 +1,6 @@
 # Decoder
 
-Want to **ACCESS** without set-up? [QUICK LINK](https://decode-production-5927.up.railway.app/history)
+Want to **ACCESS** without set-up? [QUICK LINK](https://decode-production-5927.up.railway.app)
 
 A web tool for decoding text. Paste something encoded, and it works out what it
 is; or build your own private shorthand and encode with that.
