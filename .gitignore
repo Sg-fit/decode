@@ -1,7 +1,8 @@
+# the database holds password hashes and everyone's saved text — never commit it
 data/
 *.db
 secret.key
-.data/
+
 # python
 __pycache__/
 *.pyc
@@ -11,6 +12,7 @@ __pycache__/
 venv/
 .venv/
 
+# leftovers from earlier versions
 _to_delete/
 
 # tests

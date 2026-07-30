@@ -1,6 +1,6 @@
 """Flask app: the decoder, served as plain HTML forms.
 
-    python -m app.main          (from backend/, serves on :8000)
+    python main.py              (from the project root, serves on :8000)
 
 No JSON, no fetch, no client-side state. The page posts a form, the server
 does the work and renders the next page. Every button is a submit button
@@ -13,11 +13,17 @@ from pathlib import Path
 from flask import Flask, Response, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import db
-from .backend.app import codecs
+# main.py sits at the project root; the modules live in backend/app, so put
+# backend/ on the import path and import them as the "app" package.
+import sys
 
-FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
-TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT / "backend"))
+
+from app import codecs, db      # noqa: E402  (must follow the path setup)
+
+FRONTEND = ROOT / "frontend"
+TEMPLATES = ROOT / "backend" / "templates"
 
 MAX_INPUT = 200_000
 MAX_STEPS = 25
@@ -272,13 +278,14 @@ def history_page(message=None, bad=False):
                            message=message, message_bad=bad, here="/history",
                            symbols_enabled=app.config.get("SYMBOLS_ENABLED", False))
 
-# #the symbol library (app/symbols.py + templates/symbols.html).
-# try:
-#     from .symbols import bp as symbols_bp
-#     app.register_blueprint(symbols_bp)
-#     app.config["SYMBOLS_ENABLED"] = True
-# except ImportError:
-#     pass
+# the symbol library (backend/app/symbols.py + templates/symbols.html).
+# Registered only if it imports, so deleting it leaves the decoder working.
+try:
+    from app.symbols import bp as symbols_bp
+    app.register_blueprint(symbols_bp)
+    app.config["SYMBOLS_ENABLED"] = True
+except ImportError:
+    pass
 
 
 if __name__ == "__main__":
