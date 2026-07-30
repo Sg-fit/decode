@@ -1,5 +1,7 @@
 # the database holds password hashes and everyone's saved text — never commit it
 data/
+*.db
+secret.key
 
 # python
 __pycache__/
@@ -13,11 +15,12 @@ venv/
 # leftovers from earlier versions
 _to_delete/
 
+# tests
+backend/tests/
+
 # editor / os
 .vscode/
 .idea/
+.DS_Store
 Thumbs.db
 desktop.ini
-
-backend/tests
-
