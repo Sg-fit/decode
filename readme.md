@@ -20,10 +20,7 @@ you want and it becomes a step.
 around a Caesar shift. Each step runs on the previous step's output, with a
 preview under every one, so you can see exactly where a chain goes wrong.
 
-**Save and revisit.** With an account, name a result to keep it, and every run
-is recorded in your history automatically.
----
-
+**Save and revisit** 
 <img width="949" height="505" alt="image" src="https://github.com/user-attachments/assets/82ffa5cc-dd94-41de-b30c-c1aa26295ff1" />
 After logged in, a user is able to view his/her history and all saved enc/dec set-up. Click on the box will bring the set-up to the current page and apply that set-up. 
 
@@ -31,6 +28,7 @@ Another place you can access history is through the **HISTORY** icon next to use
 <img width="943" height="493" alt="image" src="https://github.com/user-attachments/assets/07918a67-cc62-485e-b67d-7ae00f819882" />
 <img width="955" height="497" alt="image" src="https://github.com/user-attachments/assets/e8b9f6fd-c3a4-4a20-915f-54975b3d8e35" />
 
+---
 
 ## Encodings
 
