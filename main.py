@@ -130,7 +130,8 @@ def run_pipeline(text, steps):
 def index():
     return decoder_page()
 
-
+#because we saved work in html form set up, the action vareiable here is a pain
+#but it still saves a lot of work 
 @app.post("/")
 def index_post():
     action = request.form.get("action", "run")
