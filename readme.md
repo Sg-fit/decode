@@ -6,6 +6,8 @@ is; or build your own private shorthand and encode with that.
 Written in Flask with plain HTML forms — no JavaScript is needed for anything
 except the visual theme, so the whole site works with scripting turned off.
 
+<img width="956" height="505" alt="image" src="https://github.com/user-attachments/assets/4298610b-9efe-4efb-8c1b-69c27fe97c01" />
+
 ---
 
 ## What it does
