@@ -20,12 +20,6 @@ preview under every one, so you can see exactly where a chain goes wrong.
 
 **Save and revisit.** With an account, name a result to keep it, and every run
 is recorded in your history automatically.
-
-**Your own symbol library.** Store short triggers that stand for whole phrases
-(`;late` → *running late, be there soon*), then add rules on top to scramble the
-result. Export the library as a text file and whoever imports it reads exactly
-what you wrote.
-
 ---
 
 ## Encodings
@@ -57,33 +51,6 @@ clean Morse or Binary parse means more than a clean Caesar one, since Caesar
 hex, but hex bytes are always two digits, so three-digit groups tip the ranking
 towards ASCII decimal.
 
----
-
-## Symbol libraries and patterns
-
-A **symbol** is a trigger and a phrase. Decoding swaps triggers for phrases;
-encoding does the reverse, longest phrase first.
-
-A **pattern** is up to six rules applied after your symbols:
-
-| Rule | Shape | What it does |
-|---|---|---|
-| Custom alphabet | strict | your own order for a–z |
-| Keyword shift | strict | each letter moves by the next letter of a keyword |
-| Reverse all | stable | the whole message backwards |
-| Reverse each word | stable | words stay put, letters flip |
-| Rail fence | stable | write along a zig-zag, read off line by line |
-
-Every rule **keeps the message the same length** — *strict* means each character
-stays in place, *stable* means characters move but the count doesn't change.
-That guarantee is enforced at runtime and is what makes a pattern reversible:
-decoding runs the same list backwards.
-
-A pattern is checked against awkward sample text (empty, punctuation, digits,
-non-ASCII) before it can be saved. If it can't be undone, it isn't stored.
-
----
-
 ## Running it
 
 ```bash
@@ -93,32 +60,12 @@ python wsgi.py
 
 Then open <http://localhost:8000>.
 
-In production, any WSGI server works:
-
-```bash
-gunicorn wsgi:app
-```
-
 ### Settings
 
 | Variable | Purpose |
 |---|---|
 | `DECODE_SECRET` | Signs session cookies. Set this in deployment, or logins reset on every restart. |
 | `DECODE_DATA` | Where the SQLite database lives. Defaults to `backend/data/`. |
-
----
-
-## Tests
-
-```bash
-cd backend
-pytest
-```
-
-136 tests. Alongside the usual cases they check the properties that matter:
-every codec round-trips (`decode(encode(x)) == x`), every rule preserves length,
-and one account can neither see nor delete another's saved results.
-
 ---
 
 ## Layout
@@ -137,11 +84,8 @@ backend/
 frontend/            style.css, symbols.css, glitch.js (theme only)
 ```
 
-`symbols.py` and `rules.py` are an **optional add-on**. `main.py` registers them
-inside a `try/except ImportError`, so deleting those files leaves the decoder
-working exactly as before — there's a test for it.
-
 ---
+
 
 ## A note on what this is
 
