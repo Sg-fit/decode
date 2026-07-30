@@ -280,13 +280,6 @@ def history_page(message=None, bad=False):
                            message=message, message_bad=bad, here="/history",
                            symbols_enabled=app.config.get("SYMBOLS_ENABLED", False))
 
-# #the symbol library (app/symbols.py + templates/symbols.html).
-# try:
-#     from .symbols import bp as symbols_bp
-#     app.register_blueprint(symbols_bp)
-#     app.config["SYMBOLS_ENABLED"] = True
-# except ImportError:
-#     pass
 
 
 if __name__ == "__main__":
