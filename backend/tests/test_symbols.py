@@ -11,11 +11,11 @@ from app.symbols import decode, encode, tidy
 def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DECODE_DATA", str(tmp_path))
     monkeypatch.setenv("DECODE_SECRET", "test-secret")
-    from app import db as db_module
+    from . import db as db_module
     importlib.reload(db_module)
     from app import symbols as sym_module
     importlib.reload(sym_module)
-    from app import main as main_module
+    from . import main as main_module
     importlib.reload(main_module)
     main_module.app.config["TESTING"] = True
     c = main_module.app.test_client()

@@ -6,6 +6,9 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+.tests/
+
+
 # virtual environments
 venv/
 .venv/

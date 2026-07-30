@@ -123,9 +123,9 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DECODE_DATA", str(tmp_path))
     monkeypatch.setenv("DECODE_SECRET", "test-secret")
     import importlib
-    from app import db as db_module
+    from . import db as db_module
     importlib.reload(db_module)
-    from app import main as main_module
+    from . import main as main_module
     importlib.reload(main_module)
     main_module.app.config["TESTING"] = True
     return main_module.app.test_client()
@@ -260,15 +260,15 @@ def test_save_and_delete(client):
         "param": "", "savename": "flag", "action": "save"}))
     assert "Saved." in body and "flag" in body
 
-    from app import db as db_module
+    from . import db as db_module
     entry = db_module.list_entries(1, "save")[0]
     body = html(client.post(f"/saves/{entry['id']}/delete", follow_redirects=True))
     assert "Nothing saved yet" in body
 
 
 def test_history_records_and_shows_a_block(client):
-    from app import db as db_module
-    from app.main import HISTORY_BLOCK
+    from . import db as db_module
+    from main import HISTORY_BLOCK
     register(client)
     for i in range(HISTORY_BLOCK + 3):
         client.post("/", data={"text": f"SGVsbG8{i}=", "method": "base64",
@@ -284,7 +284,7 @@ def test_history_records_and_shows_a_block(client):
 
 
 def test_history_skips_a_repeat(client):
-    from app import db as db_module
+    from . import db as db_module
     register(client)
     for _ in range(3):
         client.post("/", data={"text": "SGVsbG8=", "method": "base64",

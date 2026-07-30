@@ -13,7 +13,8 @@ from pathlib import Path
 from flask import Flask, Response, redirect, render_template, request, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from . import codecs, db
+from . import db
+from .backend.app import codecs
 
 FRONTEND = Path(__file__).resolve().parents[2] / "frontend"
 TEMPLATES = Path(__file__).resolve().parents[1] / "templates"
