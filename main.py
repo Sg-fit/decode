@@ -70,6 +70,8 @@ def login():
         # would reject an older password and hint at what it looks like.
         if not (3 <= len(username) <= 32) or not username.replace("_", "").isalnum():
             return decoder_page(message="username must be 3-32 letters, digits or underscores", bad=True)
+        if len(password) < MIN_PASSWORD:
+            return decoder_page(message=f"password must be at least {MIN_PASSWORD} characters", bad=True)
         uid = db.create_user(username, generate_password_hash(password))
         if uid is None:
             return decoder_page(message="that username is taken", bad=True)
@@ -278,14 +280,13 @@ def history_page(message=None, bad=False):
                            message=message, message_bad=bad, here="/history",
                            symbols_enabled=app.config.get("SYMBOLS_ENABLED", False))
 
-# the symbol library (backend/app/symbols.py + templates/symbols.html).
-# Registered only if it imports, so deleting it leaves the decoder working.
-try:
-    from app.symbols import bp as symbols_bp
-    app.register_blueprint(symbols_bp)
-    app.config["SYMBOLS_ENABLED"] = True
-except ImportError:
-    pass
+# #the symbol library (app/symbols.py + templates/symbols.html).
+# try:
+#     from .symbols import bp as symbols_bp
+#     app.register_blueprint(symbols_bp)
+#     app.config["SYMBOLS_ENABLED"] = True
+# except ImportError:
+#     pass
 
 
 if __name__ == "__main__":
