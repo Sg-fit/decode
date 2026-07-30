@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Decoder — structural encodings{% endblock %}
+
+{% block content %}
+  <div class="sub">Base64 · Hex · Binary · Decimal · URL · Caesar.
+    Auto-detect what you pasted, then chain steps until it reads.
+    Everything runs on the server; the page posts a form and comes back.</div>
+
+  <!-- One form holds the whole state: the text and every step. Each button
+       below submits it with a different action, and the server re-renders. -->
+  <form method="post" action="/" enctype="multipart/form-data">
+  <div class="grid">
+
+    <!-- INPUT -->
+    <section class="card">
+      <h2 title="The text to work on. Every step below runs on whatever is in this box.">Input
+        <span class="meta" style="margin:0;text-transform:none;letter-spacing:0">{{ text|length }} chars</span>
+      </h2>
+      <textarea name="text" placeholder="Paste text here…" spellcheck="false"
+        title="Paste or type the encoded text here, then press Run.">{{ text }}</textarea>
+      <div class="drop" title="Pick a text file to load as the input, then press Run.">
+        <input type="file" name="upload" title="Load a text file as the input.">
+      </div>
+      <div class="row mt">
+        <button name="action" value="run" title="Run the pipeline on this text.">Run ▸</button>
+        <button class="ghost" name="action" value="clear" title="Empty the input and remove every step.">Clear</button>
+        <button class="ghost" name="action" value="feed" title="Move the result into the input and start a fresh pipeline.">↑ Use output as input</button>
+        <button class="ghost" name="action" value="sample" title="Load an example that is Base64 wrapped around Hex.">Try a sample</button>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="card">
+      <h2 title="Steps run top to bottom: each one receives the previous step's output.">Pipeline
+        <span class="row" style="gap:5px">
+          <button class="mini ghost" name="action" value="add" title="Add a step you choose yourself.">+ Step</button>
+          <button class="mini" name="action" value="detect" title="Try every method on the current text and rank what looks most like readable output.">✨ Detect</button>
+        </span>
+      </h2>
+
+      {% for step in steps %}
+        {% set r = results[loop.index0] if loop.index0 < results|length else {} %}
+        <div class="step {{ 'off' if not step.on }} {{ 'bad' if r.error }}"
+             title="Step {{ loop.index }} of the chain — takes the {{ 'previous step’s output' if not loop.first else 'input text' }} and passes its result to the next step.">
+          <div class="hd">
+            <span class="idx">{{ loop.index }}</span>
+            <select name="method" title="Which encoding this step applies.">
+              <option value="auto" {{ 'selected' if step.method == 'auto' }}>Auto-detect (best guess)</option>
+              {% for m in methods %}
+                <option value="{{ m.key }}" {{ 'selected' if step.method == m.key }}>{{ m.name }}</option>
+              {% endfor %}
+            </select>
+            <select name="dir" title="Decode reads this encoding back into plain text; encode goes the other way.">
+              <option value="decode" {{ 'selected' if step.dir == 'decode' }}>Dec</option>
+              <option value="encode" {{ 'selected' if step.dir == 'encode' }}>Enc</option>
+            </select>
+            <span class="spacer"></span>
+            <button class="mini ghost" name="action" value="up:{{ loop.index0 }}" title="Move this step earlier." {{ 'disabled' if loop.first }}>↑</button>
+            <button class="mini ghost" name="action" value="down:{{ loop.index0 }}" title="Move this step later." {{ 'disabled' if loop.last }}>↓</button>
+            <button class="mini ghost" name="action" value="toggle:{{ loop.index0 }}" title="Skip this step without deleting it.">{{ '◉' if step.on else '○' }}</button>
+            <button class="mini ghost" name="action" value="del:{{ loop.index0 }}" title="Remove this step.">✕</button>
+          </div>
+          <!-- one hidden field per step keeps the on/off flag lined up with the selects -->
+          <input type="hidden" name="on" value="{{ 1 if step.on else 0 }}">
+          {% if step.method in param_methods %}
+            <div class="opts">
+              <label title="How many letters to rotate by. 3 is the classic Caesar; 13 is ROT13.">shift
+                <input type="text" name="param" value="{{ step.param }}" style="width:64px">
+              </label>
+            </div>
+          {% else %}
+            <input type="hidden" name="param" value="">
+          {% endif %}
+          <pre class="peek {{ 'err' if r.error }}" title="What this step produced, or why it failed.">{% if step.on %}{% if r.error %}⚠ {{ r.error }}{% else %}{{ (r.output or '')[:180] or '(empty)' }}{% if r.note %}  ·  {{ r.note }}{% endif %}{% endif %}{% else %}(skipped){% endif %}</pre>
+        </div>
+      {% endfor %}
+
+      {% if not steps %}
+        <div class="empty">No steps yet. Hit <b>✨ Detect</b> to have the input analysed, or <b>+ Step</b> to pick a method yourself.</div>
+      {% endif %}
+
+      {% if candidates %}
+        <h2 style="margin:14px -12px 8px">Candidates — pick one to add</h2>
+        {% for c in candidates %}
+          <button class="cand" style="display:block;width:100%;text-align:left;text-transform:none;letter-spacing:0;font-weight:400"
+                  name="action" value="use:{{ c.method }}:{{ c.param or '' }}"
+                  title="Add {{ c.label }} as the next step in the pipeline.">
+            <span class="n">{{ c.label }}</span>
+            <span class="s" title="Confidence: printable characters, common English words and letter frequency.">{{ c.score|round|int }}{{ ' ▲' if c.score > base_score + 5 }}</span>
+            <pre>{{ c.output[:300] }}</pre>
+            <div class="bar" style="width: {{ c.width }}%"></div>
+          </button>
+        {% endfor %}
+      {% endif %}
+    </section>
+
+    <!-- OUTPUT -->
+    <section class="card">
+      <h2 title="The text after every enabled step has run.">Output</h2>
+      <textarea readonly spellcheck="false" title="Result of the pipeline. Select it to copy.">{{ output }}</textarea>
+      <div class="meta">{{ output|length }} chars · {{ enabled_count }} step(s)</div>
+
+      <div class="row mt">
+        <input type="text" name="filename" value="decoded.txt" style="width:135px" title="Filename used by the Download button.">
+        <button name="action" value="download" title="Save the result as a text file.">Download</button>
+      </div>
+
+      <div class="row mt">
+        <input type="text" name="savename" placeholder="name this result" style="flex:1;min-width:120px"
+               title="A label so you can recognise this result later in the Saved list.">
+        <button class="ghost" name="action" value="save" title="Store the input, the pipeline and the result under your account." {{ 'disabled' if not user }}>Save</button>
+      </div>
+      <div class="meta" style="margin-top:10px">Press <b>Run ▸</b> after changing a step — the page reloads with the result.</div>
+    </section>
+  </div>
+  </form>
+
+  {% if user %}
+    <div class="grid two">
+      <section class="card">
+        <h2 title="Results you named and kept.">Saved</h2>
+        {% for e in saves %}
+          <form method="post" action="/">
+            <input type="hidden" name="text" value="{{ e.input }}">
+            {% for s in e.steps %}
+              <input type="hidden" name="method" value="{{ s.method }}">
+              <input type="hidden" name="dir" value="{{ s.direction or 'decode' }}">
+              <input type="hidden" name="on" value="1">
+              <input type="hidden" name="param" value="{{ s.param or '' }}">
+            {% endfor %}
+            <div class="cand" title="This saved result.">
+              <span class="n">{{ e.name or 'untitled' }}</span>
+              <span class="s">{{ e.when }}</span>
+              <pre>{{ (e.output or '')[:200] }}</pre>
+              <div class="row" style="margin-top:5px">
+                <button class="mini ghost" name="action" value="run" title="Load this result back into the decoder.">Open</button>
+                <button class="mini ghost" formaction="/saves/{{ e.id }}/delete" title="Delete this saved result.">✕</button>
+              </div>
+            </div>
+          </form>
+        {% else %}
+          <div class="empty">Nothing saved yet — name a result and hit Save.</div>
+        {% endfor %}
+      </section>
+
+      <section class="card">
+        <h2 title="Runs recorded automatically. The newest {{ history_block }} show here.">History
+          <span class="row" style="gap:6px">
+            <span class="meta" style="margin:0">{{ history_count }}</span>
+            <a class="mini ghost btnlink" href="/history" title="Open the full history page.">View all</a>
+          </span>
+        </h2>
+        {% for e in history %}
+          <form method="post" action="/">
+            <input type="hidden" name="text" value="{{ e.input }}">
+            {% for s in e.steps %}
+              <input type="hidden" name="method" value="{{ s.method }}">
+              <input type="hidden" name="dir" value="{{ s.direction or 'decode' }}">
+              <input type="hidden" name="on" value="1">
+              <input type="hidden" name="param" value="{{ s.param or '' }}">
+            {% endfor %}
+            <button class="cand" style="display:block;width:100%;text-align:left;text-transform:none;letter-spacing:0;font-weight:400"
+                    name="action" value="run" title="Load this run back into the decoder.">
+              <span class="n">{{ e.chain }}</span>
+              <span class="s">{{ e.when }}</span>
+              <pre>{{ (e.output or '')[:200] }}</pre>
+            </button>
+          </form>
+        {% else %}
+          <div class="empty">Runs you make will show up here.</div>
+        {% endfor %}
+      </section>
+    </div>
+  {% endif %}
+{% endblock %}

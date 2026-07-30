@@ -1,0 +1,20 @@
+# the database holds password hashes and everyone's saved text — never commit it
+backend/data/
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# virtual environments
+venv/
+.venv/
+
+# leftovers from earlier versions
+_to_delete/
+
+# editor / os
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini

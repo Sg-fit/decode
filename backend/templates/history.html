@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Decoder — history{% endblock %}
+{% block heading %}History{% endblock %}
+
+{% block content %}
+  <div class="sub">Every run kept for your account, newest first. Open one to load it back into the decoder.
+    {% if user %}{{ total }} run{{ '' if total == 1 else 's' }} stored.{% endif %}</div>
+
+  {% if not user %}
+    <div class="empty">Log in on the <a href="/" style="color:var(--acc)">decoder page</a> to see your history.</div>
+  {% else %}
+    <section class="card">
+      <h2 title="Every stored run, newest first.">Runs
+        <form method="post" action="/history/clear" style="margin-left:auto">
+          <button class="mini ghost" title="Delete every recorded run. Saved results are not affected.">Clear all</button>
+        </form>
+      </h2>
+
+      {% for e in items %}
+        <form method="post" action="/">
+          <input type="hidden" name="text" value="{{ e.input }}">
+          {% for s in e.steps %}
+            <input type="hidden" name="method" value="{{ s.method }}">
+            <input type="hidden" name="dir" value="{{ s.direction or 'decode' }}">
+            <input type="hidden" name="on" value="1">
+            <input type="hidden" name="param" value="{{ s.param or '' }}">
+          {% endfor %}
+          <button class="cand" style="display:block;width:100%;text-align:left;text-transform:none;letter-spacing:0;font-weight:400"
+                  name="action" value="run" title="Reopen this run in the decoder, with its input and steps restored.">
+            <span class="n">{{ e.chain }}</span>
+            <span class="s">{{ e.when }}</span>
+            <pre>{{ (e.output or '')[:300] }}</pre>
+            <div class="meta src">in: {{ (e.input or '')[:90] }}</div>
+          </button>
+        </form>
+      {% else %}
+        <div class="empty">No runs yet — decode something and it will show up here.</div>
+      {% endfor %}
+    </section>
+  {% endif %}
+  <a href="/" title="Back"><button name="action" value="back">DECODER</button></a>
+{% endblock %}

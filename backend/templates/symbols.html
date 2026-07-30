@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Decoder — my symbols{% endblock %}
+{% block heading %}My symbols{% endblock %}
+{% block extracss %}<link rel="stylesheet" href="/symbols.css">{% endblock %}
+
+{% block content %}
+  <div class="sub">Your own shorthand: a short trigger stands for a phrase.
+    Decoding swaps triggers for phrases, encoding does the reverse.
+    Share the file and whoever imports it reads exactly what you wrote.
+    {% if user %}{{ symbols|length }} of {{ max_symbols }} symbols used.{% endif %}</div>
+
+  {% if not user %}
+    <div class="empty">Log in on the <a href="/" style="color:var(--acc)">decoder page</a> to build a library.</div>
+  {% else %}
+  <div class="grid four">
+
+    <!-- ADD -->
+    <section class="card">
+      <h2 title="Create a symbol, or overwrite one by reusing its trigger.">Add a symbol</h2>
+      <form method="post" action="/symbols/save">
+        <label class="f" title="What you type to stand for the phrase. One word, no spaces — e.g. ;late or a glyph like △.">trigger
+          <input type="text" name="trigger" value="{{ edit.trigger or '' }}" placeholder=";late" required>
+        </label>
+        <label class="f" title="The full text this trigger expands into.">phrase
+          <input type="text" name="value" value="{{ edit.value or '' }}" placeholder="running late, be there soon" required>
+        </label>
+        <label class="f" title="Optional reminder to yourself. Never appears in a message.">note (optional)
+          <input type="text" name="note" value="{{ edit.note or '' }}" placeholder="for the group chat">
+        </label>
+        <div class="row mt">
+          <button title="Save this symbol to your library.">Save symbol</button>
+        </div>
+      </form>
+      <form method="post" action="/symbols/seed" class="row mt">
+        <button class="ghost" title="Add a starter set of common symbols to get going.">Add starter set</button>
+      </form>
+
+      <h2 style="margin-top:14px" title="Move your library between accounts or send it to someone else.">Share</h2>
+      <div class="row">
+        <a class="btnlink" href="/symbols/export" title="Download your library as a file you can send to someone.">Export</a>
+      </div>
+      <form method="post" action="/symbols/import" enctype="multipart/form-data" class="row mt">
+        <input type="file" name="pack" title="A library file someone sent you." required>
+        <button class="ghost" title="Copy those symbols into your library. Their later edits won't change your messages.">Import</button>
+      </form>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="card">
+      <h2 title="Every symbol you own.">Library</h2>
+      {% for s in symbols %}
+        <div class="sym" title="Edit or delete this symbol.">
+          <code class="trig">{{ s.trigger }}</code>
+          <span class="val">{{ s.value }}</span>
+          <span class="row" style="gap:4px">
+            <a class="btnlink" href="/symbols?edit={{ s.id }}" title="Load this symbol into the form.">edit</a>
+            <form method="post" action="/symbols/{{ s.id }}/delete" style="display:inline">
+              <button class="mini ghost" title="Delete this symbol.">✕</button>
+            </form>
+          </span>
+          <div class="note meta">{{ s.note or '' }}</div>
+        </div>
+      {% else %}
+        <div class="empty">No symbols yet — add one, or click "Add starter set".</div>
+      {% endfor %}
+    </section>
+
+    <!-- PATTERN -->
+    <section class="card">
+      <h2 title="Your own code: rules applied after your symbols. Every rule keeps the message the same length.">My pattern</h2>
+      <form method="post" action="/symbols/pattern">
+        {% for step in chain %}
+          {% set info = rule_info.get(step.rule, {}) %}
+          <div class="rule" title="Step {{ loop.index }} of your pattern — runs after the step above.">
+            <div class="hd">
+              <span class="idx">{{ loop.index }}</span>
+              <select name="rule" title="Which transform this step applies.">
+                {% for r in rules %}
+                  <option value="{{ r.key }}" {{ 'selected' if r.key == step.rule }}>{{ r.name }}</option>
+                {% endfor %}
+              </select>
+              <span class="shape" title="strict = each character stays in place; stable = characters move but the length is unchanged.">{{ info.shape }}</span>
+              <span class="spacer"></span>
+              <button class="mini ghost" name="action" value="up:{{ loop.index0 }}" title="Move this rule earlier." {{ 'disabled' if loop.first }}>↑</button>
+              <button class="mini ghost" name="action" value="down:{{ loop.index0 }}" title="Move this rule later." {{ 'disabled' if loop.last }}>↓</button>
+              <button class="mini ghost" name="action" value="del:{{ loop.index0 }}" title="Remove this rule.">✕</button>
+            </div>
+            {% if info.param %}
+              <label class="f" style="margin:6px 0 0" title="{{ info.help }}">{{ info.param }}
+                <input type="text" name="param" value="{{ step.param }}">
+              </label>
+            {% else %}
+              <input type="hidden" name="param" value="">
+            {% endif %}
+            <div class="why">{{ info.help }}</div>
+          </div>
+        {% else %}
+          <div class="empty">No rules yet — your symbols alone are your code. Add a rule to scramble it further.</div>
+        {% endfor %}
+        <div class="row mt">
+          <button class="ghost" name="action" value="add" title="Add a rule to the end of your pattern." {{ 'disabled' if chain|length >= max_rules }}>+ Rule</button>
+          <button name="action" value="save" title="Check the pattern can be undone, then save it.">Save pattern</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- TRY IT -->
+    <section class="card">
+      <h2 title="Run your library and pattern on some text.">Try it</h2>
+      <form method="post" action="/symbols/run">
+        <textarea name="text" spellcheck="false" style="min-height:120px" placeholder="…"
+          title="Type symbols to expand them, or plain text to compress it.">{{ try_in }}</textarea>
+        <div class="row mt">
+          <button name="direction" value="decode" title="Undo your pattern, then replace triggers with phrases.">Decode →</button>
+          <button class="ghost" name="direction" value="encode" title="Replace phrases with triggers, then apply your pattern.">← Encode</button>
+        </div>
+        <textarea readonly spellcheck="false" style="min-height:120px;margin-top:9px"
+          title="Result. Unknown words are left exactly as they were.">{{ try_out }}</textarea>
+        <div class="meta">{{ try_note }}</div>
+      </form>
+    </section>
+  </div>
+  {% endif %}
+{% endblock %}

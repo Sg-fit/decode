@@ -1,0 +1,30 @@
+/* Symbol library page — only loaded by symbols.html, so the decoder's own
+   styling is untouched. Uses the variables from style.css. */
+
+.grid.three{grid-template-columns:1fr 1fr 1fr}
+.grid.four{grid-template-columns:1fr 1fr 1fr 1fr}
+@media (max-width:1200px){.grid.four{grid-template-columns:1fr 1fr}}
+@media (max-width:1000px){.grid.three,.grid.four{grid-template-columns:1fr}}
+
+label.f{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;
+  font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.12em}
+label.f input{width:100%}
+
+.sym{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:baseline;
+  background:var(--panel2);border:1px solid var(--line);border-left:2px solid var(--line2);
+  padding:7px 8px;margin-bottom:7px;cursor:pointer}
+.sym:hover{border-color:var(--acc)}
+.sym .trig{color:var(--acc);font-weight:700;font-family:var(--mono)}
+.sym .val{color:var(--txt);word-break:break-word}
+.sym .note{grid-column:1/-1;margin:0;font-size:10.5px}
+.sym .note:empty{display:none}
+
+/* rule chain */
+.rule{background:var(--panel2);border:1px solid var(--line);border-left:2px solid var(--line2);
+  padding:7px 8px;margin-bottom:7px}
+.rule .hd{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.rule select{flex:1 1 72px;min-width:72px;max-width:120px;padding:4px 2px}
+.rule .hd .mini{padding:2px 5px}
+.rule .shape{flex:0 0 auto}
+.rule .shape{font-size:9.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.rule .why{font-size:10.5px;color:var(--dim);margin-top:5px;border-top:1px dashed var(--line);padding-top:5px}

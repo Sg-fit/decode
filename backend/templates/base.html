@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Decoder{% endblock %}</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%94%93%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+{% block extracss %}{% endblock %}
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>{% block heading %}Decoder{% endblock %}</h1>
+
+    <!-- Accounts. Plain forms: post, then redirect back to this page. -->
+    {% if user %}
+      <div class="auth">
+        <span class="meta" style="margin:0" title="The account this browser is signed in to.">user: <b>{{ user }}</b></span>
+        <!-- {% if symbols_enabled %}
+          <a class="mini ghost btnlink" href="/symbols" title="Build your own symbol library: short triggers that stand for whole phrases.">My symbols</a>
+        {% endif %} -->
+        <a class="mini ghost btnlink" href="/history" title="Every run kept for your account.">History</a>
+        <form method="post" action="/logout" style="display:inline">
+          <input type="hidden" name="next" value="{{ here }}">
+          <button class="ghost mini" title="End this session. Decoding keeps working; saving and history are hidden until you log back in.">Log out</button>
+        </form>
+      </div>
+    {% else %}
+      <form class="auth" method="post" action="/login">
+        <input type="hidden" name="next" value="{{ here }}">
+        <input type="text" name="username" placeholder="user" autocomplete="username" style="width:110px"
+               title="Your account name — 3-32 letters, digits or underscores. Only needed for saving and history.">
+        <input type="password" name="password" placeholder="password" autocomplete="current-password" style="width:120px"
+               title="At least 6 characters. Stored only as a salted hash — never as text.">
+        <button name="action" value="login" title="Sign in to an existing account.">Log in</button>
+        <button class="ghost" name="action" value="register" title="Create a new account with the name and password typed above.">Sign up</button>
+      </form>
+    {% endif %}
+  </div>
+
+  {% if message %}
+    <div class="meta {{ 'err' if message_bad else '' }}" style="margin:8px 0 0">{{ '⚠ ' if message_bad }}{{ message }}</div>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</div>
+<script src="/glitch.js"></script>
+</body>
+</html>
