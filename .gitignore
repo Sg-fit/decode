@@ -1,13 +1,10 @@
 # the database holds password hashes and everyone's saved text — never commit it
-backend/data/
+data/
 
 # python
 __pycache__/
 *.pyc
 .pytest_cache/
-
-.tests/
-
 
 # virtual environments
 venv/
@@ -21,3 +18,6 @@ _to_delete/
 .idea/
 Thumbs.db
 desktop.ini
+
+backend/tests
+
