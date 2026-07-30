@@ -10,15 +10,7 @@ import urllib.parse
 
 # --------------------------------------------------------------------------- #
 # codecs
-#
-# Error convention: every decode() raises ValueError when the input isn't in its
-# alphabet, with a short lowercase reason ("not hex") that is shown to the user
-# verbatim. This is load-bearing in two places:
-#   - detect() treats a ValueError as "this codec isn't it" and moves on;
-#   - run() catches it per step and reports it without killing the chain.
-# So a strict decode that fails loudly is a feature, not a bug — never widen a
-# check to "accept anything and return garbage".
-# --------------------------------------------------------------------------- #
+
 
 
 def b64_encode(t):
@@ -27,6 +19,8 @@ def b64_encode(t):
     return base64.b64encode(t.encode()).decode() # decode only for python to understand 
 #cuz it convert it into a string 
 
+#From here on is the encoding and decoding method for each of the encoding methods
+#they can be a bit hard to understand, I don't fully, bu tI know all the principles 
 
 def b64_decode(t):
     s = re.sub(r"\s+", "", t).replace("-", "+").replace("_", "/")
@@ -133,7 +127,6 @@ def _text(data):
 # key: (label, encode, decode, detection bonus, parameter default)
 # Detection bonus (higher = more preferred when scores are close). 
 # 0 means “never auto-detect this one on its own”
-# parameter -> default for codecs that take one (None means it takes none)
 CODECS = {
     "base64":  ("Base64",           b64_encode,   b64_decode,   30, None),
     "hex":     ("Hex",              hex_encode,   hex_decode,   34, None),
@@ -143,6 +136,7 @@ CODECS = {
     "caesar":  ("Caesar shift",     caesar_encode, caesar_decode, 0, "3"),
 }
 
+#now is applying and using all of the fucntions, above is setting up 
 
 def apply(method, text, direction="decode", param=None):
     if method not in CODECS:
@@ -160,9 +154,7 @@ def apply(method, text, direction="decode", param=None):
         raise ValueError(f"bad parameter for {method}: {param!r}")
 
 
-# --------------------------------------------------------------------------- #
 # detection
-# --------------------------------------------------------------------------- #
 COMMON = {
     "the", "and", "that", "have", "for", "not", "with", "you", "this", "but",
     "from", "are", "was", "all", "one", "out", "who", "has", "her", "his",
@@ -177,6 +169,8 @@ FREQ = {
     "w": 2.4, "f": 2.2, "g": 2.0, "y": 2.0, "p": 1.9, "b": 1.5, "v": 1.0,
     "k": 0.8, "j": 0.15, "x": 0.15, "q": 0.1, "z": 0.07,
 }
+
+#above is statistics 
 
 # weighs are not fixed, they can be easily changed 
 def score(text):
