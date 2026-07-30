@@ -1,12 +1,4 @@
 """SQLite storage: accounts, saved results, run history — written in pandas.
-
-Every read is `pd.read_sql_query`, every write is `DataFrame.to_sql`. sqlite3
-appears only to open the connection, which pandas needs.
-
-Because pandas cannot UPDATE or DELETE, a delete is done the pandas way:
-load the table, drop the rows, write the table back. That is fine for tables
-this size (tens of rows per user) and is why every function starts by loading
-a DataFrame.
 """
 
 import json
@@ -106,7 +98,7 @@ def find_user(username):
     found = users[users["username"].str.lower() == username.lower()]
     return to_dicts(found)[0] if not found.empty else None
 
-
+#find the username and data using user id 
 def user_by_id(user_id):
     users = load("users")
     found = users[users["id"] == user_id] if not users.empty else users
@@ -122,14 +114,14 @@ def add_entry(user_id, kind, text, steps, output, name=None):
     append("entries", {"id": new_id, "user_id": user_id, "kind": kind, "name": name,
                        "input": text, "steps": json.dumps(steps), "output": output,
                        "created_at": time.time()}, ENTRIES)
-
+#all of the parameters are recorded
     if kind == "history":
         trim_history(user_id)
 
     entries = load("entries")
     return read_entries(entries[entries["id"] == new_id])[0]
 
-
+#for the sake of storage, trim the history down 
 def trim_history(user_id):
     """Keep only this user's newest history rows."""
     entries = load("entries")
@@ -140,7 +132,7 @@ def trim_history(user_id):
     extra = mine.sort_values("id", ascending=False)["id"].iloc[HISTORY_LIMIT:]
     replace("entries", entries[~entries["id"].isin(extra)], ENTRIES)
 
-
+#loading all of the history out 
 def list_entries(user_id, kind, limit=50):
     """Newest first."""
     entries = load("entries")
@@ -149,7 +141,7 @@ def list_entries(user_id, kind, limit=50):
     mine = entries[(entries["user_id"] == user_id) & (entries["kind"] == kind)]
     return read_entries(mine.sort_values("id", ascending=False).head(limit))
 
-
+#for convenience, using json here 
 def read_entries(frame):
     """Rows as dicts, with the stored JSON turned back into a list of steps."""
     rows = to_dicts(frame)
@@ -190,7 +182,7 @@ def clear_history(user_id):
     replace("entries", entries[~doomed], ENTRIES)
 
 
-
+#using cookies js to keep the users logged in and the data recorded 
 def secret_key():
     """Flask signs session cookies with this."""
     if os.environ.get("DECODE_SECRET"):
