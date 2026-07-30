@@ -250,9 +250,6 @@ def detect(text, limit=6):
 # pipeline
 def run(text, steps):
     """Run steps in order, each on the previous output.
-
-    A failing step doesn't abort the chain — it reports the error and passes its
-    input through
     """
     current = text
     results = []
