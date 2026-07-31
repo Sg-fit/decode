@@ -65,7 +65,7 @@ towards ASCII decimal.
 
 ```bash
 pip install -r requirements.txt
-python wsgi.py
+python main.py
 ```
 
 Then open <http://localhost:8000>.
